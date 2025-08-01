@@ -9,13 +9,28 @@
   "categories": [
     "Other"
   ],
-  "activationEvents": [],
-  "main": "./extension.js",
+  "activationEvents": [
+    "onCommand:vue-i18n-chinese-search.searchInCurrentFile"
+  ],
+  "main": "./src/extension.js",
   "contributes": {
-    "commands": [{
-      "command": "vue-i18n-chinese-search.helloWorld",
-      "title": "Hello World"
-    }]
+    "commands": [
+      {
+        "command": "vue-i18n-chinese-search.searchInCurrentFile",
+        "title": "vue-i18n-chinese-search: 当前文件词条搜索"
+      }
+    ],
+    "configuration": {
+      "type": "object",
+      "title": "vue-i18n 中文搜索定位配置",
+      "properties": {
+        "vue-i18n-chinese-search.i18nFilePath": {
+          "type": "string",
+          "default": "./src/i18n/zh-CN.json",
+          "description": "i18n 中文 JSON 文件路径（可使用绝对路径或相对于工作区的相对路径）"
+        }
+      }
+    }
   },
   "scripts": {
     "lint": "eslint .",
