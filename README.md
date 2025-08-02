@@ -1,65 +1,33 @@
-# vue-i18n-chinese-search README
+# vue-i18n-chinese-search
 
-This is the README for your extension "vue-i18n-chinese-search". After writing up a brief description, we recommend including the following sections.
+插件：vue-i18n 中文搜索定位
 
-## Features
+解决问题：当文件中都是用 `$t('key')` 引用词条时，想通过中文搜索定位就变得很麻烦，需要先在中文 json 中找到对应 key，然后再搜索 key
 
-Describe specific features of your extension including screenshots of your extension in action. Image paths are relative to this README file.
+主要功能：在文件中搜索中文内容，定位到对应的 `$t('key')` 引用位置
 
-For example if there is an image subfolder under your extension project workspace:
+> 如果词条在当前文件中只有一次引用，则会直接跳转；如果有多次引用，会再弹出一个匹配列表，通过上下键切换选择。
 
-\!\[feature X\]\(images/feature-x.png\)
+使用流程：
 
-> Tip: Many popular extensions utilize animations. This is an excellent way to show off your extension! We recommend short, focused animations that are easy to follow.
+1. 安装完插件后，运行 `vue-i18n-chinese-search.searchInCurrentFile`
+2. 配置中文 json 路径，使用相对路径或绝对路径都可以
 
-## Requirements
+> 如果配置异常失败，请删除 `.vscode/settings.json` 中的 `vue-i18n-chinese-search.i18nFilePath` 配置，然后重新启动 vscode 激活插件。
 
-If you have any requirements or dependencies, add a section describing those and how to install and configure them.
+命令和默认快捷键配置：
 
-## Extension Settings
+```json
+"keybindings": [
+  {
+    "command": "vue-i18n-chinese-search.searchInCurrentFile",
+    "key": "ctrl+shift+i",
+    "mac": "cmd+shift+i",
+    "when": "editorTextFocus"
+  }
+],
+```
 
-Include if your extension adds any VS Code settings through the `contributes.configuration` extension point.
+## 另外
 
-For example:
-
-This extension contributes the following settings:
-
-* `myExtension.enable`: Enable/disable this extension.
-* `myExtension.thing`: Set to `blah` to do something.
-
-## Known Issues
-
-Calling out known issues can help limit users opening duplicate issues against your extension.
-
-## Release Notes
-
-Users appreciate release notes as you update your extension.
-
-### 1.0.0
-
-Initial release of ...
-
-### 1.0.1
-
-Fixed issue #.
-
-### 1.1.0
-
-Added features X, Y, and Z.
-
----
-
-## Working with Markdown
-
-You can author your README using Visual Studio Code.  Here are some useful editor keyboard shortcuts:
-
-* Split the editor (`Cmd+\` on macOS or `Ctrl+\` on Windows and Linux)
-* Toggle preview (`Shift+Cmd+V` on macOS or `Shift+Ctrl+V` on Windows and Linux)
-* Press `Ctrl+Space` (Windows, Linux, macOS) to see a list of Markdown snippets
-
-## For more information
-
-* [Visual Studio Code's Markdown Support](http://code.visualstudio.com/docs/languages/markdown)
-* [Markdown Syntax Reference](https://help.github.com/articles/markdown-basics/)
-
-**Enjoy!**
+如有使用问题，可以用邮箱联系我，389368595@qq.com。

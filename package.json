@@ -1,8 +1,11 @@
 {
+  "publisher": "xiefangqing",
+  "repository": "https://github.com/xiefangqing/vue-i18n-chinese-search",
+  "icon": "icon.png",
   "name": "vue-i18n-chinese-search",
   "displayName": "vue-i18n 中文搜索定位",
   "description": "在 vue 文件中搜索中文，直接定位到使用位置",
-  "version": "0.0.1",
+  "version": "1.0.0",
   "engines": {
     "vscode": "^1.102.0"
   },

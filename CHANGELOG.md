@@ -1,9 +1,3 @@
-# Change Log
+## 发行说明
 
-All notable changes to the "vue-i18n-chinese-search" extension will be documented in this file.
-
-Check [Keep a Changelog](http://keepachangelog.com/) for recommendations on how to structure this file.
-
-## [Unreleased]
-
-- Initial release
+2025-08-02：首次发布，v1.0.0
