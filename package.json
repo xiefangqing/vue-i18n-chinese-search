@@ -1,7 +1,7 @@
 {
   "name": "vue-i18n-chinese-search",
   "displayName": "vue-i18n 中文搜索定位",
-  "description": "在vue文件中搜索中文，直接定位到使用位置",
+  "description": "在 vue 文件中搜索中文，直接定位到使用位置",
   "version": "0.0.1",
   "engines": {
     "vscode": "^1.102.0"
@@ -17,7 +17,7 @@
     "commands": [
       {
         "command": "vue-i18n-chinese-search.searchInCurrentFile",
-        "title": "vue-i18n-chinese-search: 当前文件词条搜索"
+        "title": "vue-i18n-chinese-search: 当前文件中文词条搜索"
       }
     ],
     "configuration": {
@@ -26,7 +26,7 @@
       "properties": {
         "vue-i18n-chinese-search.i18nFilePath": {
           "type": "string",
-          "default": "./src/i18n/zh-CN.json",
+          "default": "",
           "description": "i18n 中文 JSON 文件路径（可使用绝对路径或相对于工作区的相对路径）"
         }
       }

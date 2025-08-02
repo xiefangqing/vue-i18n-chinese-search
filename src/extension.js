@@ -10,30 +10,21 @@ let i18nFilePath = '';
  */
 async function activate(context) {
   try {
-    // 显示加载状态
-    const statusBarItem = vscode.window.createStatusBarItem(vscode.StatusBarAlignment.Right, 100);
-    statusBarItem.text = '正在加载i18n词条...';
-    statusBarItem.show();
-
     // 等待词条加载完成再注册命令
     const result = await ensureI18nPathAndLoad();
     globalEntries = result.entries;
     i18nFilePath = result.path;
 
-    statusBarItem.hide();
-
-    if (Object.keys(globalEntries).length === 0) {
-      vscode.window.showWarningMessage('未加载到任何i18n词条，请检查配置的文件是否正确。');
-    } else {
-      vscode.window.showInformationMessage(`已加载 ${Object.keys(globalEntries).length} 个i18n词条`);
+    if (Object.keys(globalEntries).length) {
+      vscode.window.showInformationMessage(`已加载 ${Object.keys(globalEntries).length} 个词条。`);
     }
 
-    // 当前文件内搜索
+    // 在当前文件内搜索词条并跳转到使用位置
     const disposable1 = vscode.commands.registerCommand('vue-i18n-chinese-search.searchInCurrentFile', async () => {
       await performSearch(false);
     });
 
-    context.subscriptions.push(disposable1, statusBarItem);
+    context.subscriptions.push(disposable1);
   } catch (error) {
     vscode.window.showErrorMessage(`插件激活失败: ${error.message}`);
     console.error('插件激活失败:', error);
@@ -42,14 +33,13 @@ async function activate(context) {
 
 async function performSearch() {
   if (Object.keys(globalEntries).length === 0) {
-    vscode.window.showWarningMessage('i18n 词条尚未加载，请稍候再试。');
+    vscode.window.showWarningMessage('i18n 词条尚未加载，请重启 VSCode 激活插件。');
     return;
   }
 
-  // 当前文件搜索只使用文件中出现的词条
   const editor = vscode.window.activeTextEditor;
   if (!editor) {
-    vscode.window.showErrorMessage('请先打开一个文件');
+    vscode.window.showWarningMessage('请先打开一个文件');
     return;
   }
 
@@ -57,7 +47,7 @@ async function performSearch() {
   const usedKeys = Object.keys(globalEntries).filter((k) => text.includes(k));
 
   if (usedKeys.length === 0) {
-    vscode.window.showInformationMessage('当前文件中未使用任何i18n词条');
+    vscode.window.showInformationMessage('当前文件中未使用任何 i18n 词条');
     return;
   }
 
@@ -73,7 +63,6 @@ async function performSearch() {
 
   if (!pick) return;
 
-  // 当前文件搜索跳转到当前文件中的位置
   await jumpToCurrentFile(pick.description);
 }
 
@@ -82,6 +71,7 @@ async function jumpToCurrentFile(key) {
   if (!editor) return;
 
   const text = editor.document.getText();
+  // 匹配被单引号（'key'）或双引号（"key"）包裹的 key
   const regex = new RegExp(`'${escapeRegExp(key)}'|"${escapeRegExp(key)}"`);
   const match = text.match(regex);
 
@@ -90,11 +80,13 @@ async function jumpToCurrentFile(key) {
     editor.selection = new vscode.Selection(pos, pos);
     editor.revealRange(new vscode.Range(pos, pos), vscode.TextEditorRevealType.InCenter);
   } else {
-    vscode.window.showInformationMessage(`未在当前文件中找到键名: ${key}`);
+    vscode.window.showInformationMessage(`未在当前文件中找到词条: ${key}`);
   }
 }
 
-// 辅助函数：转义正则表达式特殊字符
+/**
+ * 对 key 进行转义，防止 key 中包含正则特殊字符（如 *、?）导致匹配错误
+ */
 function escapeRegExp(str) {
   return str.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 }
