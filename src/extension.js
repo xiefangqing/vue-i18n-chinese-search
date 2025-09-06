@@ -1,9 +1,11 @@
 const vscode = require('vscode');
 const { ensureI18nPathAndLoad } = require('./utils');
 const path = require('path');
+const fs = require('fs');
 
 let globalEntries = {};
 let i18nFilePath = '';
+let fileWatcher = null;
 
 /**
  * @param {vscode.ExtensionContext} context
@@ -12,19 +14,32 @@ async function activate(context) {
   try {
     // 等待词条加载完成再注册命令
     const result = await ensureI18nPathAndLoad();
+    
+    // 检查是否成功加载词条
+    if (Object.keys(result.entries).length === 0) {
+      vscode.window.showErrorMessage('插件激活失败：未加载到有效的i18n词条。请检查i18n文件路径和格式是否正确。');
+      return;
+    }
+    
     globalEntries = result.entries;
     i18nFilePath = result.path;
 
-    if (Object.keys(globalEntries).length) {
-      vscode.window.showInformationMessage(`已加载 ${Object.keys(globalEntries).length} 个词条。`);
-    }
+    vscode.window.showInformationMessage(`已加载 ${Object.keys(globalEntries).length} 个词条。`);
+
+    // 设置文件监听
+    setupFileWatcher();
 
     // 在当前文件内搜索词条并跳转到使用位置
     const disposable1 = vscode.commands.registerCommand('vue-i18n-chinese-search.searchInCurrentFile', async () => {
       await performSearch(false);
     });
 
-    context.subscriptions.push(disposable1);
+    // 注册刷新词条命令
+    const disposable2 = vscode.commands.registerCommand('vue-i18n-chinese-search.refreshEntries', async () => {
+      await refreshI18nEntries();
+    });
+
+    context.subscriptions.push(disposable1, disposable2);
   } catch (error) {
     vscode.window.showErrorMessage(`插件激活失败: ${error.message}`);
     console.error('插件激活失败:', error);
@@ -165,7 +180,76 @@ function escapeRegExp(str) {
   return str.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 }
 
-function deactivate() {}
+/**
+ * 刷新 i18n 词条
+ */
+async function refreshI18nEntries() {
+  try {
+    const result = await ensureI18nPathAndLoad();
+
+    // 只有在成功加载词条时才更新全局变量
+    if (Object.keys(result.entries).length > 0) {
+      const oldCount = Object.keys(globalEntries).length;
+      globalEntries = result.entries;
+      i18nFilePath = result.path;
+      const newCount = Object.keys(globalEntries).length;
+
+      // 设置文件监听
+      setupFileWatcher();
+
+      if (newCount > oldCount) {
+        vscode.window.showInformationMessage(
+          `已刷新词条，新增 ${newCount - oldCount} 个词条，当前共 ${newCount} 个词条。`
+        );
+      } else if (newCount < oldCount) {
+        vscode.window.showInformationMessage(
+          `已刷新词条，减少 ${oldCount - newCount} 个词条，当前共 ${newCount} 个词条。`
+        );
+      } else {
+        vscode.window.showInformationMessage(`已刷新词条，当前共 ${newCount} 个词条。`);
+      }
+    } else {
+      // 词条为空（可能是JSON解析失败），保持原有数据不变
+      vscode.window.showWarningMessage('刷新词条失败，保持原有词条数据。请检查i18n文件格式是否正确。');
+    }
+  } catch (error) {
+    vscode.window.showErrorMessage(`刷新词条失败: ${error.message}`);
+    console.error('刷新词条失败:', error);
+  }
+}
+
+/**
+ * 设置文件监听器
+ */
+function setupFileWatcher() {
+  // 先清除之前的监听器
+  if (fileWatcher) {
+    fileWatcher.close();
+    fileWatcher = null;
+  }
+
+  if (i18nFilePath) {
+    // 使用防抖避免频繁触发
+    let debounceTimer;
+    fileWatcher = fs.watch(i18nFilePath, (eventType) => {
+      if (eventType === 'change') {
+        clearTimeout(debounceTimer);
+        debounceTimer = setTimeout(() => {
+          // vscode.window.showInformationMessage('检测到 i18n 文件已修改，正在自动刷新词条...');
+          refreshI18nEntries();
+        }, 500); // 500ms 防抖
+      }
+    });
+  }
+}
+
+function deactivate() {
+  // 清理文件监听器
+  if (fileWatcher) {
+    fileWatcher.close();
+    fileWatcher = null;
+  }
+}
 
 module.exports = {
   activate,

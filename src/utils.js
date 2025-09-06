@@ -28,9 +28,8 @@ async function loadI18nEntries(filePath) {
     const json = JSON.parse(text);
     return flattenI18n(json);
   } catch (error) {
-    vscode.window.showErrorMessage(`加载i18n文件失败: ${error.message}`);
-    console.error('加载i18n文件失败:', error);
-    return {};
+    // 抛出具体错误，让调用方决定如何处理
+    throw new Error(`加载i18n文件失败: ${error.message}`);
   }
 }
 
@@ -83,9 +82,15 @@ async function ensureI18nPathAndLoad() {
     console.error('保存配置失败:', error);
   }
 
-  // 读取并扁平化
-  const entries = await loadI18nEntries(absPath);
-  return { entries, path: absPath };
+  try {
+    // 读取并扁平化
+    const entries = await loadI18nEntries(absPath);
+    return { entries, path: absPath };
+  } catch (error) {
+    vscode.window.showErrorMessage(error.message);
+    console.error(error.message);
+    return { entries: {}, path: absPath };
+  }
 }
 
 // 检查文件是否存在
