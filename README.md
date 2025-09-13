@@ -8,6 +8,11 @@
 
 > 如果词条在当前文件中只有一次引用，则会直接跳转；如果有多次引用，会再弹出一个匹配列表，通过上下键切换选择。
 
+(New) 支持词条 @:key 链接解析，比如词条是：
+"OrderNew": {
+"0": "@:Global.25",
+}，那么在解析 OrderNew.0 时，就会直接获取 Global.25 对应的中文。
+
 使用流程：
 
 1. 安装完插件后，运行 `vue-i18n-chinese-search.searchInCurrentFile`

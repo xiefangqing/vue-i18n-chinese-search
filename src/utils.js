@@ -3,19 +3,43 @@ const path = require('path');
 const vscode = require('vscode');
 
 /**
- * 递归扁平化 i18n 嵌套对象
+ * 递归扁平化 i18n 嵌套对象，支持引用解析
  * 如 { a: { b: '文本' } } ⇒ { 'a.b': '文本' }
+ * 支持 Vue I18n 引用格式如 "@:Global.25"
  */
 function flattenI18n(obj, prefix = '', result = {}) {
+  // 先收集所有键值对，但不处理引用（确保所有基础值都先被收集）
+  const tempResult = {};
+  
   for (const key of Object.keys(obj)) {
     const val = obj[key];
     const newKey = prefix ? `${prefix}.${key}` : key;
+    
     if (typeof val === 'string') {
-      result[newKey] = val;
+      tempResult[newKey] = val;
     } else if (typeof val === 'object' && val !== null) {
-      flattenI18n(val, newKey, result);
+      flattenI18n(val, newKey, tempResult);
     }
   }
+  
+  // 第二次遍历处理引用解析
+  for (const [key, value] of Object.entries(tempResult)) {
+    if (typeof value === 'string' && value.startsWith('@:')) {
+      const refKey = value.substring(2); // 去掉"@:"前缀
+      // 在整个扁平化结果中查找引用目标
+      const refValue = tempResult[refKey];
+      if (refValue !== undefined && typeof refValue === 'string' && !refValue.startsWith('@:')) {
+        result[key] = refValue;
+      } else {
+        // 无效引用，保持原样
+        result[key] = value;
+      }
+    } else {
+      // 普通字符串值或非引用值
+      result[key] = value;
+    }
+  }
+  
   return result;
 }
 
